@@ -23,12 +23,12 @@ class AutomationStep():
 
 
 class BrowserAutomation():
-    def __init__(self, command_executor, initial_page, headless=False):
-        self.headless = headless
-        self.__browser = self.__setup_chrome_browser(command_executor, headless)
+    def __init__(self, args, initial_page):
+        self.headless = args.headless_mode
+        self.__browser = self.__setup_chrome_browser(args.executor, args.headless_mode)
         self.__enter_initial_page(initial_page)
         self.__steps = []
-        self.__workspace = {}
+        self.__workspace = {'args': args}
     
     def __del__(self):
         if self.headless:
