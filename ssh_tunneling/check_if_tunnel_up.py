@@ -36,6 +36,9 @@ def parse_args(parser):
 
 
 def log_status(status, log_file_path):
+    if not os.path.exists(log_file_path):
+        with open(log_file_path, 'w'): pass
+
     date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(status)
     with open(log_file_path, 'r+') as log:
