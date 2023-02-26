@@ -15,7 +15,7 @@ DEFAULT_REMOTE_USER = "frog"
 DEFAULT_REMOTE_SERVER = "frog01.mikr.us"
 DEFAULT_LOG_FILE_PATH = os.path.join(SCRIPT_DIR_PATH, "logs", "frog_tunnel.log")
 
-LOG_MAX_LINES_COUNT = 50000
+LOG_MAX_LINES_COUNT = 1500
 
 
 def parse_args(parser):
@@ -35,14 +35,23 @@ def parse_args(parser):
     return parser.parse_args()
 
 
+def clear_log_file(log_file_path):
+    os.remove(log_file_path)
+    with open(log_file_path, 'w'): pass
+
+
 def log_status(status, log_file_path):
+    print(status)
+
     if not os.path.exists(log_file_path):
         with open(log_file_path, 'w'): pass
 
-    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(status)
-    with open(log_file_path, 'r+') as log:
+    with open(log_file_path, 'r') as log:
         log_lines = log.readlines()
+
+    clear_log_file(log_file_path)
+    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open(log_file_path, 'w') as log:
         if (len(log_lines) >= LOG_MAX_LINES_COUNT):
             log_lines.pop(0)
         log_lines.append(f"{date}: {status}\n")
