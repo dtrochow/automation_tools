@@ -15,6 +15,8 @@ DEFAULT_REMOTE_USER = "frog"
 DEFAULT_REMOTE_SERVER = "frog01.mikr.us"
 DEFAULT_LOG_FILE_PATH = os.path.join(SCRIPT_DIR_PATH, "logs", "frog_tunnel.log")
 
+LOG_MAX_LINES_COUNT = 50000
+
 
 def parse_args(parser):
     parser.add_argument('-lp', '--local_port', dest='local_port', action='store',
@@ -36,8 +38,12 @@ def parse_args(parser):
 def log_status(status, log_file_path):
     date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(status)
-    with open(log_file_path, 'a') as log:
-        log.write(f"{date}: {status}\n")
+    with open(log_file_path, 'r+') as log:
+        log_lines = log.readlines()
+        if (len(log_lines) >= LOG_MAX_LINES_COUNT):
+            log_lines.pop(0)
+        log_lines.append(f"{date}: {status}\n")
+        log.writelines(log_lines)
 
 
 def get_alive_tunnels():
