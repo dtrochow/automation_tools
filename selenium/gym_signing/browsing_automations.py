@@ -1,7 +1,6 @@
 from time import sleep
 
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 
 
 class AutomationStep():
@@ -23,9 +22,9 @@ class AutomationStep():
 
 
 class BrowserAutomation():
-    def __init__(self, args, initial_page):
+    def __init__(self, args, initial_page, resolution):
         self.headless = args.headless_mode
-        self.__browser = self.__setup_chrome_browser(args.executor, args.headless_mode)
+        self.__browser = self.__setup_chrome_browser(args.executor, args.headless_mode, resolution)
         self.__enter_initial_page(initial_page)
         self.__steps = []
         self.__workspace = {'args': args}
@@ -34,13 +33,15 @@ class BrowserAutomation():
         if self.headless:
             self.__browser.quit()
     
-    def __setup_chrome_browser(self, command_executor_, headless):
+    def __setup_chrome_browser(self, command_executor_, headless, resolution):
         chrome_options = webdriver.ChromeOptions()
         if headless:
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--headless")
-        return webdriver.Remote(command_executor=command_executor_, options=chrome_options)
-    
+        chrome_options.add_argument(f"--window-size={resolution[0]},{resolution[1]}")
+        self.driver = webdriver.Remote(command_executor=command_executor_, options=chrome_options)
+        return self.driver
+
     def __enter_initial_page(self, initial_page_url):
         print(f"Entering initial page: {initial_page_url}")
         self.__browser.get(initial_page_url)
@@ -52,3 +53,6 @@ class BrowserAutomation():
     def perform_all_steps(self):
         for step in self.__steps:
             step.run(self.__workspace, self.__browser)
+            
+    def save_screenshot(self, filename):
+        self.driver.save_screenshot(f"{filename}.png")

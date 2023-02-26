@@ -35,7 +35,7 @@ def parse_args(parser):
     parser.add_argument('-hm', '--headless_mode', action="store_true", help='Enable headless mode')
     parser.add_argument('-e', '--executor', dest='executor', action='store',
                         default=DEFAULT_COMMAND_EXECUTOR, help='Executor URL')
-    parser.add_argument('--trenning', dest='trenning', action='store',
+    parser.add_argument('--training', dest='training', action='store',
                         default=DEFAULT_TRENING, help='Trening name (e.g. Trening.Obwodowy). Use "." instead of spaces.')
     parser.add_argument('--trener', dest='trener', action='store',
                         default=DEFAULT_TRENER, help='Trener name (e.g. Małgorzata.Olejniczak). Use "." instead of spaces.')
@@ -73,8 +73,8 @@ def get_search_pattern(trening, trener):
 
 
 def find_training_id(browser, trening, trener):
-    training_descrićption = re.search(get_search_pattern(trening, trener), browser.page_source)
-    return re.findall('id=\"([a-z][0-9]{6})\"', training_descrićption.group(0))[0]
+    training_description = re.search(get_search_pattern(trening, trener), browser.page_source)
+    return re.findall('id=\"([a-z][0-9]{6})\"', training_description.group(0))[0]
 
 
 def try_to_click(browser, training_id):
@@ -123,8 +123,8 @@ def jump_to_gym_schedule(workspace, browser):
     browser.get(workspace['args'].schedule_site)
 
 
-def find_right_trenning(workspace, browser):
-    training_id = find_training_id(browser, workspace['args'].trenning, workspace['args'].trener)
+def find_right_training(workspace, browser):
+    training_id = find_training_id(browser, workspace['args'].training, workspace['args'].trener)
     workspace["training_id"] = training_id
 
 
@@ -143,12 +143,12 @@ def training_sign_up(workspace, browser):
 
 if __name__ == "__main__":
     args = parse_args(ArgumentParser(description='Setup SSH-Tunnel'))
-    automation = BrowserAutomation(args, ZDROFIT_SITE)
+    automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080))
     
     automation.add_step(accept_cookies, "Accept cookies", wait_after_in_sec=1.5, in_headless=False)
     automation.add_step(enter_credentials, "Enter credentials", wait_after_in_sec=1, in_headless=True)
     automation.add_step(jump_to_gym_schedule, "Jump to gym schedule", wait_after_in_sec=1, in_headless=True)
-    automation.add_step(find_right_trenning, "Find the right training", wait_after_in_sec=0, in_headless=True)
+    automation.add_step(find_right_training, "Find the right training", wait_after_in_sec=0, in_headless=True)
     automation.add_step(click_on_chosen_training, "Click on chosen training", wait_after_in_sec=1.5, in_headless=True)
     automation.add_step(training_sign_up, "Sign up for training", wait_after_in_sec=1.5, in_headless=True)
     
