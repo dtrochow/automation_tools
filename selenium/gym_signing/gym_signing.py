@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
-from time import sleep
 import os
+import sys
 import re
 from argparse import ArgumentParser
+from datetime import datetime
 
 from browsing_automations import BrowserAutomation
 
@@ -11,6 +11,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+AUTOMATION_TOOLS_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir)
+sys.path.append(AUTOMATION_TOOLS_DIR_PATH)
+from signal_bot.signal import SignalCallMeBot
 
 # ---------------------------------------------------------------------------- #
 #                                Script settings                               #
@@ -27,6 +30,12 @@ DEFAULT_GYM_SCHEDULE_SITE = 'https://zdrofit.pl/kluby-fitness/gdansk-alchemia/gr
 
 DEFAULT_EMAIL = "name.surname@gmail.com"
 DEFAULT_PASSWD_FILE_PATH = os.path.join(SCRIPT_DIR_PATH, os.pardir, "passwd_zdrofit")
+
+
+def validate_args(args):
+    if ((args.uuid != None) and (args.apikey == None) or
+        (args.uuid == None) and (args.apikey != None)):
+        raise Exception("--uuid and --apikey can not be specified singly")
 
 
 def parse_args(parser):
@@ -47,6 +56,13 @@ def parse_args(parser):
                         default=None, help='Training start time (e.g. "19:00")')
     parser.add_argument('-et', '--end_time', dest='end_time', action='store',
                         default=None, help='Training end time (e.g. "19:55")')
+    parser.add_argument('-id', '--uuid', dest='uuid', action='store',
+                        default=None, help='UUID of the Signal communicator (it can also be a phone number e.g. +49 123 456 789)')
+    parser.add_argument('-k', '--apikey', dest='apikey', action='store',
+                        default=None, help='The apikey that you received during the activation process (Signal CallMeBot)')
+    
+    args = parser.parse_args()
+    validate_args(args)
     
     return parser.parse_args()
 
@@ -110,7 +126,7 @@ def training_sign_up(workspace, browser):
 # ---------------------------------------------------------------------------- #
 
 if __name__ == "__main__":
-    args = parse_args(ArgumentParser(description='Setup SSH-Tunnel'))
+    args = parse_args(ArgumentParser(description='Gym Signing Tool'))
     automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080))
     
     automation.add_step(accept_cookies, "Accept cookies", wait_after_in_sec=1, in_headless=False)
@@ -121,5 +137,11 @@ if __name__ == "__main__":
     automation.add_step(training_sign_up, "Sign up for training", wait_after_in_sec=1.5, in_headless=True)
     
     automation.perform_all_steps()
+    
+    if args.uuid:
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        training = args.training.replace('.', ' ')
+        trener = args.trener.replace('.', ' ')
+        SignalCallMeBot(args.uuid, args.apikey).send_message(f"{date} [ZDROFIT]: {args.login} is signed up for a <{training}> training with <{trener}>\nTraining time: {args.start_time}-{args.end_time}")
 
     del automation
