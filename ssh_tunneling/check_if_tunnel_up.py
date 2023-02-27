@@ -5,6 +5,10 @@ import sys
 from datetime import datetime
 import os
 
+AUTOMATION_TOOLS_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+sys.path.append(AUTOMATION_TOOLS_DIR_PATH)
+from signal_bot.signal import SignalCallMeBot
+
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -17,6 +21,12 @@ DEFAULT_LOG_FILE_PATH = os.path.join(SCRIPT_DIR_PATH, "logs", "frog_tunnel.log")
 
 LOG_MAX_LINES_COUNT = 1500
 
+
+def validate_args(args):
+    if ((args.uuid != None) and (args.apikey == None) or
+        (args.uuid == None) and (args.apikey != None)):
+        raise Exception("--uuid and --apikey can not be specified singly")
+    
 
 def parse_args(parser):
     parser.add_argument('-lp', '--local_port', dest='local_port', action='store',
@@ -31,8 +41,15 @@ def parse_args(parser):
                         default=DEFAULT_REMOTE_SERVER, help='Remote server URL/IP')
     parser.add_argument('-log', '--log_file', dest='log_file', action='store',
                         default=DEFAULT_LOG_FILE_PATH, help='Path for script LOG FILE')
+    parser.add_argument('-id', '--uuid', dest='uuid', action='store',
+                        default=None, help='UUID of the Signal communicator (it can also be a phone number e.g. +49 123 456 789)')
+    parser.add_argument('-k', '--apikey', dest='apikey', action='store',
+                        default=None, help='The apikey that you received during the activation process (Signal CallMeBot)')
     
-    return parser.parse_args()
+    args = parser.parse_args()
+    validate_args(args)
+
+    return args
 
 
 def clear_log_file(log_file_path):
@@ -83,12 +100,25 @@ def bring_up_the_tunnel(remote_port, local_port, remote_user, remote_server, ssh
 
 
 if __name__ == "__main__":
-    args = parse_args(ArgumentParser(description='Setup SSH-Tunnel'))
+    try:
+        args = parse_args(ArgumentParser(description='Setup SSH-Tunnel'))
+    except Exception as e:
+        print(e)
+        sys.exit(-1)
+
+    if args.uuid:
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        signal = SignalCallMeBot(args.uuid, args.apikey)
+
     if not check_if_tunnel_is_alive(args.local_port):
         log_status("TUNNEL INACTIVE <!!!>", args.log_file)
+        if args.uuid:
+            signal.send_message(f"{date}: SSH Tunnel {args.local_port}<->{args.remote_port}:{args.remote_server} <INACTIVE>")
         status = bring_up_the_tunnel(args.remote_port, args.local_port, args.remote_user, args.remote_server, ssh_port=args.ssh_port)
         if status != 0:
             print("Something went wrong during establishing the SSH tunnel.")
             sys.exit(-1)
+        if args.uuid:
+            signal.send_message(f"{date}: SSH Tunnel {args.local_port}<->{args.remote_port}:{args.remote_server} <ACTIVATED>")
     else:
         log_status("TUNNEL IS ACTIVE", args.log_file)
