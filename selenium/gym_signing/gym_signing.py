@@ -98,34 +98,39 @@ def find_training_ids(browser, trening, trener, start_hour, end_hour):
 #                               Automation Steps                               #
 # ---------------------------------------------------------------------------- #
 
-def accept_cookies(workspace, browser):
+def accept_cookies(workspace, browser, log_file):
     WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.ID, 'didomi-notice-agree-button'))).click()
 
 
-def enter_credentials(workspace, browser):
+def enter_credentials(workspace, browser, log_file):
     browser.find_element(By.ID, 'member_login_form_email').send_keys(workspace['args'].login)
     browser.find_element(By.ID, 'member_login_form_password').send_keys(get_passwd(workspace['args'].password))
     browser.find_element(By.ID, 'member_login_form_submit').click()
 
 
-def jump_to_gym_schedule(workspace, browser):
+def jump_to_gym_schedule(workspace, browser, log_file):
     browser.get(workspace['args'].schedule_site)
 
 
-def find_right_training(workspace, browser):
+def find_right_training(workspace, browser, log_file):
     training_ids = find_training_ids(browser, workspace['args'].training, workspace['args'].trener,
                                    workspace['args'].start_time, workspace['args'].end_time)
+    log_file.write(f"Training IDs found:\n")
+    for id in training_ids:
+        log_file.write(f"ID: {id[-1]}\n")
     workspace["training_ids"] = training_ids
 
 
-def move_to_training_reservation_page(workspace, browser):
-    training_id = workspace['training_ids'][0][-1][:-2]
+def move_to_training_reservation_page(workspace, browser, log_file):
+    training_id = workspace['training_ids'][0][-1][1:]
+    log_file.write(f"Chosen training ID: {training_id}\n")
     reservetion_page = f"{DEFAULT_GYM_SCHEDULE_SITE}/{training_id}#rezerwacja"
     browser.get(reservetion_page)
 
 
-def training_sign_up(workspace, browser):
+def training_sign_up(workspace, browser, log_file):
     WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.ID, 'schedule_register_form_submit'))).click()
+    log_file.write("You are signed up!\n")
 
 # ---------------------------------------------------------------------------- #
 

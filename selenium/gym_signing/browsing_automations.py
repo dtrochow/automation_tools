@@ -16,7 +16,7 @@ class AutomationStep():
     def run(self, workspace, browser, log_file):
         if self.__should_run():
             self.log_step(log_file, self.name)
-            self.function(workspace, browser)
+            self.function(workspace, browser, log_file)
             sleep(self.wait_after_in_sec)
 
     def log_step(self, log_file, name):
