@@ -139,11 +139,11 @@ if __name__ == "__main__":
     automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080), args.log_dir, "zdrofit_signing.log")
     
     automation.add_step(accept_cookies, "Accept cookies", wait_after_in_sec=1, in_headless=False)
-    automation.add_step(enter_credentials, "Enter credentials", wait_after_in_sec=1, in_headless=True)
+    automation.add_step(enter_credentials, "Enter credentials", wait_after_in_sec=2.2, in_headless=True)
     automation.add_step(jump_to_gym_schedule, "Jump to gym schedule", wait_after_in_sec=1, in_headless=True)
     automation.add_step(find_right_training, "Find the right training", wait_after_in_sec=0, in_headless=True)
     automation.add_step(move_to_training_reservation_page, "Move to training reservation page", wait_after_in_sec=0.5, in_headless=True)
-    automation.add_step(training_sign_up, "Sign up for training", wait_after_in_sec=1.5, in_headless=True)
+    automation.add_step(training_sign_up, "Sign up for training", wait_after_in_sec=2, in_headless=True)
     
     automation.perform_all_steps()
     
