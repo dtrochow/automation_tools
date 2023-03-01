@@ -64,7 +64,7 @@ def parse_args(parser):
     args = parser.parse_args()
     validate_args(args)
     
-    return parser.parse_args()
+    return args
 
 # ---------------------------------------------------------------------------- #
 
@@ -109,16 +109,16 @@ def jump_to_gym_schedule(workspace, browser):
 
 
 def find_right_training(workspace, browser):
-    training_id = find_training_ids(browser, workspace['args'].training, workspace['args'].trener,
+    training_ids = find_training_ids(browser, workspace['args'].training, workspace['args'].trener,
                                    workspace['args'].start_time, workspace['args'].end_time)
-    workspace["training_id"] = training_id
+    workspace["training_ids"] = training_ids
 
 
 def move_to_training_reservation_page(workspace, browser):
-    training_id = workspace['training_id'][0][-1][1:]
+    training_id = workspace['training_ids'][0][-1][:-2]
     reservetion_page = f"{DEFAULT_GYM_SCHEDULE_SITE}/{training_id}#rezerwacja"
     browser.get(reservetion_page)
-        
+
 
 def training_sign_up(workspace, browser):
     WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.ID, 'schedule_register_form_submit'))).click()

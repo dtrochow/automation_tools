@@ -28,7 +28,7 @@ class BrowserAutomation():
         self.__enter_initial_page(initial_page)
         self.__steps = []
         self.__workspace = {'args': args}
-    
+
     def __del__(self):
         if self.headless:
             self.__browser.quit()

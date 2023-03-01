@@ -14,7 +14,7 @@ class SignalCallMeBot():
     def __init__(self, uuid, api_key):
         self.UUID = uuid
         self.api_key = api_key
-        
+
     def send_message(self, message):
         message.replace(' ', '+')
         url = f"{self.SIGNAL_CALLME_BOT_URL}?phone={self.UUID}&apikey={self.api_key}&text={message}"
