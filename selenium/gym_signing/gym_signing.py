@@ -131,7 +131,7 @@ def training_sign_up(workspace, browser):
 
 if __name__ == "__main__":
     args = parse_args(ArgumentParser(description='Gym Signing Tool'))
-    automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080))
+    automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080), args.log_dir, "zdrofit_signing.log")
     
     automation.add_step(accept_cookies, "Accept cookies", wait_after_in_sec=1, in_headless=False)
     automation.add_step(enter_credentials, "Enter credentials", wait_after_in_sec=1, in_headless=True)

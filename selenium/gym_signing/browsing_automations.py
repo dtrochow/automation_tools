@@ -15,14 +15,14 @@ class AutomationStep():
         
     def run(self, workspace, browser, log_file):
         if self.__should_run():
-            self.log_step(log_file, self._name)
+            self.log_step(log_file, self.name)
             self.function(workspace, browser)
             sleep(self.wait_after_in_sec)
 
     def log_step(self, log_file, name):
         date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        log_file.write(f"{date}: [INFO] {self.name}\n")
-        print(f"[INFO] {self.name}")
+        log_file.write(f"{date}: [INFO] {name}\n")
+        print(f"[INFO] {name}")
 
     def __should_run(self):
         return (not self.is_headless) or (self.is_headless and self.in_headless)
