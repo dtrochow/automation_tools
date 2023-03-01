@@ -1,4 +1,6 @@
 from time import sleep
+import os
+from datetime import datetime
 
 from selenium import webdriver
 
@@ -11,27 +13,34 @@ class AutomationStep():
         self.in_headless = in_headless
         self.is_headless = is_headless
         
-    def run(self, workspace, browser):
+    def run(self, workspace, browser, log_file):
         if self.__should_run():
-            print(f"[INFO] {self.name}")
+            self.log_step(log_file, self._name)
             self.function(workspace, browser)
             sleep(self.wait_after_in_sec)
-            
+
+    def log_step(self, log_file, name):
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        log_file.write(f"{date}: [INFO] {self.name}\n")
+        print(f"[INFO] {self.name}")
+
     def __should_run(self):
         return (not self.is_headless) or (self.is_headless and self.in_headless)
 
 
 class BrowserAutomation():
-    def __init__(self, args, initial_page, resolution):
+    def __init__(self, args, initial_page, resolution, log_dir, log_name):
         self.headless = args.headless_mode
         self.__browser = self.__setup_chrome_browser(args.executor, args.headless_mode, resolution)
         self.__enter_initial_page(initial_page)
         self.__steps = []
         self.__workspace = {'args': args}
+        self.__log_file = self.__get_logger_file(log_dir, log_name)
 
     def __del__(self):
         if self.headless:
             self.__browser.quit()
+        self.__log_file.close()
     
     def __setup_chrome_browser(self, command_executor_, headless, resolution):
         chrome_options = webdriver.ChromeOptions()
@@ -52,7 +61,15 @@ class BrowserAutomation():
         
     def perform_all_steps(self):
         for step in self.__steps:
-            step.run(self.__workspace, self.__browser)
+            step.run(self.__workspace, self.__browser, self.__log_file)
             
     def save_screenshot(self, filename):
         self.driver.save_screenshot(f"{filename}.png")
+
+    def __get_logger_file(self, log_dir, file_name):
+        date = datetime.now().strftime('%Y_%m_%d_%H_%M')
+        file_name = f"{date}_{file_name}"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        log_path = os.path.join(log_dir, file_name)
+        return open(log_path, 'w')

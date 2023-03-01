@@ -20,6 +20,8 @@ from signal_bot.signal import SignalCallMeBot
 # ---------------------------------------------------------------------------- #
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_LOG_DIR_PATH = os.path.join(SCRIPT_DIR_PATH, "logs")
+
 ZDROFIT_SITE = 'https://zdrofit.pl/#logowanie'
 
 DEFAULT_COMMAND_EXECUTOR = 'http://127.0.0.1:9515'
@@ -60,6 +62,8 @@ def parse_args(parser):
                         default=None, help='UUID of the Signal communicator (it can also be a phone number e.g. +49 123 456 789)')
     parser.add_argument('-k', '--apikey', dest='apikey', action='store',
                         default=None, help='The apikey that you received during the activation process (Signal CallMeBot)')
+    parser.add_argument('-ld', '--log_dir', dest='log_dir', action='store',
+                        default=DEFAULT_LOG_DIR_PATH, help='Logs directory')
     
     args = parser.parse_args()
     validate_args(args)
