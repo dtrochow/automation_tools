@@ -9,7 +9,7 @@ class SignalCallMeBot():
     param uuid: (string) UUID of the Signal communicator (it can also be a phone number e.g. +49 123 456 789)
     param api_key: (string) The apikey that you received during the activation process (step 4-5 above)
     '''
-    SIGNAL_CALLME_BOT_URL = 'https://api.callmebot.com/signal/send.php'
+    SIGNAL_CALLME_BOT_URL = 'https://signal.callmebot.com/signal/send.php'
     
     def __init__(self, uuid, api_key):
         self.UUID = uuid

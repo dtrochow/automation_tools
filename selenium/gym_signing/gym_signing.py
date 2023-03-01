@@ -20,6 +20,8 @@ from signal_bot.signal import SignalCallMeBot
 # ---------------------------------------------------------------------------- #
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_LOG_DIR_PATH = os.path.join(SCRIPT_DIR_PATH, "logs")
+
 ZDROFIT_SITE = 'https://zdrofit.pl/#logowanie'
 
 DEFAULT_COMMAND_EXECUTOR = 'http://127.0.0.1:9515'
@@ -60,6 +62,8 @@ def parse_args(parser):
                         default=None, help='UUID of the Signal communicator (it can also be a phone number e.g. +49 123 456 789)')
     parser.add_argument('-k', '--apikey', dest='apikey', action='store',
                         default=None, help='The apikey that you received during the activation process (Signal CallMeBot)')
+    parser.add_argument('-ld', '--log_dir', dest='log_dir', action='store',
+                        default=DEFAULT_LOG_DIR_PATH, help='Logs directory')
     
     args = parser.parse_args()
     validate_args(args)
@@ -94,47 +98,52 @@ def find_training_ids(browser, trening, trener, start_hour, end_hour):
 #                               Automation Steps                               #
 # ---------------------------------------------------------------------------- #
 
-def accept_cookies(workspace, browser):
+def accept_cookies(workspace, browser, log_file):
     WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.ID, 'didomi-notice-agree-button'))).click()
 
 
-def enter_credentials(workspace, browser):
+def enter_credentials(workspace, browser, log_file):
     browser.find_element(By.ID, 'member_login_form_email').send_keys(workspace['args'].login)
     browser.find_element(By.ID, 'member_login_form_password').send_keys(get_passwd(workspace['args'].password))
     browser.find_element(By.ID, 'member_login_form_submit').click()
 
 
-def jump_to_gym_schedule(workspace, browser):
+def jump_to_gym_schedule(workspace, browser, log_file):
     browser.get(workspace['args'].schedule_site)
 
 
-def find_right_training(workspace, browser):
+def find_right_training(workspace, browser, log_file):
     training_ids = find_training_ids(browser, workspace['args'].training, workspace['args'].trener,
                                    workspace['args'].start_time, workspace['args'].end_time)
+    log_file.write(f"Training IDs found:\n")
+    for id in training_ids:
+        log_file.write(f"ID: {id[-1]}\n")
     workspace["training_ids"] = training_ids
 
 
-def move_to_training_reservation_page(workspace, browser):
-    training_id = workspace['training_ids'][0][-1][:-2]
+def move_to_training_reservation_page(workspace, browser, log_file):
+    training_id = workspace['training_ids'][0][-1][1:]
+    log_file.write(f"Chosen training ID: {training_id}\n")
     reservetion_page = f"{DEFAULT_GYM_SCHEDULE_SITE}/{training_id}#rezerwacja"
     browser.get(reservetion_page)
 
 
-def training_sign_up(workspace, browser):
+def training_sign_up(workspace, browser, log_file):
     WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.ID, 'schedule_register_form_submit'))).click()
+    log_file.write("You are signed up!\n")
 
 # ---------------------------------------------------------------------------- #
 
 if __name__ == "__main__":
     args = parse_args(ArgumentParser(description='Gym Signing Tool'))
-    automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080))
+    automation = BrowserAutomation(args, ZDROFIT_SITE, (1920, 1080), args.log_dir, "zdrofit_signing.log")
     
     automation.add_step(accept_cookies, "Accept cookies", wait_after_in_sec=1, in_headless=False)
-    automation.add_step(enter_credentials, "Enter credentials", wait_after_in_sec=1, in_headless=True)
+    automation.add_step(enter_credentials, "Enter credentials", wait_after_in_sec=2.2, in_headless=True)
     automation.add_step(jump_to_gym_schedule, "Jump to gym schedule", wait_after_in_sec=1, in_headless=True)
     automation.add_step(find_right_training, "Find the right training", wait_after_in_sec=0, in_headless=True)
     automation.add_step(move_to_training_reservation_page, "Move to training reservation page", wait_after_in_sec=0.5, in_headless=True)
-    automation.add_step(training_sign_up, "Sign up for training", wait_after_in_sec=1.5, in_headless=True)
+    automation.add_step(training_sign_up, "Sign up for training", wait_after_in_sec=2, in_headless=True)
     
     automation.perform_all_steps()
     
