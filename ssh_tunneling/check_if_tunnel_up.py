@@ -119,7 +119,7 @@ if __name__ == "__main__":
             log_status("Something went wrong during establishing the SSH tunnel.")
             sys.exit(-1)
         if args.uuid:
-            log_status(f"SSH Tunnel {args.local_port}<->{args.remote_port}:{args.remote_server} <ACTIVATED>")
+            log_status(f"SSH Tunnel {args.local_port}<->{args.remote_port}:{args.remote_server} <ACTIVATED>", args.log_file)
             signal.send_message(f"{date}: SSH Tunnel {args.local_port}<->{args.remote_port}:{args.remote_server} <ACTIVATED>")
     else:
         log_status("TUNNEL IS ACTIVE", args.log_file)
